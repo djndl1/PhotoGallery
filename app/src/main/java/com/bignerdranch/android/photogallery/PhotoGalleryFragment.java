@@ -30,6 +30,7 @@ public class PhotoGalleryFragment extends Fragment
     private RecyclerView mPhotoRecyclerView;
 
     private List<GalleryItem> mItems = new ArrayList<>();
+    private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
 
     private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>>
     {
@@ -45,7 +46,8 @@ public class PhotoGalleryFragment extends Fragment
          * @param galleryItems
          */
         @Override
-        protected void onPostExecute(List<GalleryItem> galleryItems) {
+        protected void onPostExecute(List<GalleryItem> galleryItems)
+        {
             mItems = galleryItems;
             setupAdapter();
         }
@@ -71,12 +73,25 @@ public class PhotoGalleryFragment extends Fragment
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         new FetchItemsTask().execute();
+
+        mThumbnailDownloader = new ThumbnailDownloader<>();
+        mThumbnailDownloader.start();
+        mThumbnailDownloader.getLooper();
+        Log.i(TAG, "Background thread started");
     }
 
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        mThumbnailDownloader.quit();// ends the thread when the fragment is destroyed
+        Log.i(TAG, "Background thread destroyed");
+    }
 
     private class PhotoHolder extends RecyclerView.ViewHolder
     {
@@ -121,6 +136,7 @@ public class PhotoGalleryFragment extends Fragment
            GalleryItem item = mGalleryItem.get(position);
             Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
             holder.bindDrawable(placeholder);
+            mThumbnailDownloader.queueThumbnail(holder, item.getUrl());
         }
 
         @Override
