@@ -39,13 +39,22 @@ public class ThumbnailDownloader<T> extends HandlerThread
         mThumbnailDownloadListener = listener;
     }
 
+    /**
+     *
+     * @param responseHandler - a handler attached to the main thread, passed into the download thread
+     *
+     */
     public ThumbnailDownloader(Handler responseHandler)
     {
        super(TAG);
         mResponseHandler = responseHandler;
     }
 
-
+    /**
+     * callback before Looper loops
+     * HandlerThread.onLooperPrepared() is called before the Looper checks the queue for the first time.
+     This makes it a good place to create the Handler implementation.
+     */
     @Override
     protected void onLooperPrepared()
     {
@@ -67,6 +76,11 @@ public class ThumbnailDownloader<T> extends HandlerThread
         return super.quit();
     }
 
+    /**
+     * download the image and set the the response handler to execute a runnable directly,
+     * without adding a message
+     * @param target
+     */
     private void handleRequest(final T target)
     {
         try {
@@ -104,6 +118,11 @@ public class ThumbnailDownloader<T> extends HandlerThread
         mRequestMap.clear();//remove all mappings
     }
 
+    /**
+     * receive a url and add a download message to the message queue
+     * @param target the PhotoHolder holding the image
+     * @param url the url of the image to be downloaded
+     */
     public void queueThumbnail(T target, String url)
     {
         Log.i(TAG, "Got a URL: " + url);

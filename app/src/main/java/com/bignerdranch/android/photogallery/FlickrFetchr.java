@@ -32,6 +32,12 @@ public class FlickrFetchr
     private static final String TAG = "FlickrFetchr";
     private static final String API_KEY = "23e2d1e9f64e2567b1c013bd5a4f867c";
 
+    /**
+     * Download a resource according to a url
+     * @param urlSpec the resource url
+     * @return a byteArray of the resource
+     * @throws IOException
+     */
      public byte[] getUrlBytes(String urlSpec) throws IOException
      {
          //creates a connection to urlSpec
@@ -71,6 +77,10 @@ public class FlickrFetchr
          return new String(getUrlBytes(urlSpec));
      }
 
+    /**
+     * Download a JSON using API key and obtain a list of photo items
+     * @return a list of photo information of the most recent photos
+     */
      public List<GalleryItem> fetchItems()
      {
          List<GalleryItem> items = new ArrayList<>();
@@ -98,6 +108,13 @@ public class FlickrFetchr
 
      }
 
+    /**
+     * Parse a json object to obtain a list of GalleryItems
+     * @param items - a List of GalleryItem variables
+     * @param jsonBody - the JSON object to be parsed
+     * @throws IOException
+     * @throws JSONException
+     */
      private void parseItems(List<GalleryItem> items, JSONObject jsonBody) throws IOException, JSONException
      {
          JSONObject photosJsonObject = jsonBody.getJSONObject("photos") ;

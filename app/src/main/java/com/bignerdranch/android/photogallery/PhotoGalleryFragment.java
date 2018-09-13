@@ -35,6 +35,9 @@ public class PhotoGalleryFragment extends Fragment
     private List<GalleryItem> mItems = new ArrayList<>();
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
 
+    /**
+     * An AsyncTask downloading photo information
+     */
     private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>>
     {
         @Override
@@ -46,7 +49,7 @@ public class PhotoGalleryFragment extends Fragment
         /**
          * resets the adapter since the model data is now changed after fetching
          * The result of the background computation is passed to this step as a parameter.
-         * @param galleryItems
+         * @param galleryItems - the photo information downloaded
          */
         @Override
         protected void onPostExecute(List<GalleryItem> galleryItems)
@@ -75,16 +78,26 @@ public class PhotoGalleryFragment extends Fragment
         return v;
     }
 
+    /**
+     * fetch photo information and start a download thread for photo downloading using the fetched
+     * information when the fragment is created
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        new FetchItemsTask().execute();//fetch photos once the fragment is created
+        new FetchItemsTask().execute();
 
-        Handler responseHandler = new Handler();
-        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+        Handler responseHandler = new Handler(); //attached to the main thread
+        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);//passed to the download thread
         mThumbnailDownloader.setThumbnailDownloadListener(new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
+            /**
+             * bind the downloaded image to a PhotoHolder
+             * @param target the photoholder where the image will be displayed
+             * @param thumbnail the thumbnail of the image
+             */
             @Override
             public void onThumbnailDownloader(PhotoHolder target, Bitmap thumbnail) {
                 Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
@@ -107,7 +120,7 @@ public class PhotoGalleryFragment extends Fragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mThumbnailDownloader.clearQueue();
+        mThumbnailDownloader.clearQueue(); //in case that the configuration is changed
     }
 
     private class PhotoHolder extends RecyclerView.ViewHolder
@@ -154,6 +167,7 @@ public class PhotoGalleryFragment extends Fragment
             Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
             holder.bindDrawable(placeholder);
             mThumbnailDownloader.queueThumbnail(holder, item.getUrl());
+            //request the download thread to download an image
         }
 
         @Override
