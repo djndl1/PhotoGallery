@@ -22,7 +22,6 @@ public class GalleryItem {
     }
 
     public String getCaption() {
-
         return mCaption;
     }
 
@@ -37,6 +36,5 @@ public class GalleryItem {
     @Override
     public String toString() {
         return mCaption;
-
     }
 }

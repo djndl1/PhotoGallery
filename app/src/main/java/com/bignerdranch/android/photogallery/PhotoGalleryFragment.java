@@ -1,8 +1,11 @@
 package com.bignerdranch.android.photogallery;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -77,9 +80,17 @@ public class PhotoGalleryFragment extends Fragment
     {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        new FetchItemsTask().execute();
+        new FetchItemsTask().execute();//fetch photos once the fragment is created
 
-        mThumbnailDownloader = new ThumbnailDownloader<>();
+        Handler responseHandler = new Handler();
+        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+        mThumbnailDownloader.setThumbnailDownloadListener(new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
+            @Override
+            public void onThumbnailDownloader(PhotoHolder target, Bitmap thumbnail) {
+                Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                target.bindDrawable(drawable);
+            }
+        });
         mThumbnailDownloader.start();
         mThumbnailDownloader.getLooper();
         Log.i(TAG, "Background thread started");
@@ -91,6 +102,12 @@ public class PhotoGalleryFragment extends Fragment
         super.onDestroy();
         mThumbnailDownloader.quit();// ends the thread when the fragment is destroyed
         Log.i(TAG, "Background thread destroyed");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mThumbnailDownloader.clearQueue();
     }
 
     private class PhotoHolder extends RecyclerView.ViewHolder
@@ -152,7 +169,7 @@ public class PhotoGalleryFragment extends Fragment
      */
     private void setupAdapter()
     {
-        if (isAdded()) {
+        if (isAdded()) { // cannot setAdapter unless the fragment is already added to the activity
             mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
         }
     }

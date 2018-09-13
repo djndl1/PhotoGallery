@@ -22,6 +22,9 @@ import java.util.List;
 
  Secret:
  7a0dd0dc865442ba
+
+ Reads the JSON file about the recent photos on Flickr using djn's API key, and parses them into
+ gallery items. fetchItems on top, calling getUrlString(a wrapper of getUrlBytes) and parseItems.
  */
 
 public class FlickrFetchr
@@ -39,7 +42,7 @@ public class FlickrFetchr
              ByteArrayOutputStream out = new ByteArrayOutputStream();
              InputStream in = connection.getInputStream();
 
-             //if connection failed
+             //if connection failed, throw an exception
              if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                  throw new IOException(connection.getResponseMessage() +
                                         ": with " +
@@ -80,11 +83,11 @@ public class FlickrFetchr
                      .appendQueryParameter("format", "json")
                      .appendQueryParameter("nojsoncallback", "1")
                      .appendQueryParameter("extras", "url_s")
-                     .build().toString();
-             String jsonString = getUrlString(url);
+                     .build().toString(); //generates the json Uri
+             String jsonString = getUrlString(url); //gets the json string
              Log.i(TAG, "Received JSON: " + jsonString);
              JSONObject jsonBody = new JSONObject(jsonString);// parses a JSON string
-             parseItems(items, jsonBody);
+             parseItems(items, jsonBody); //parses json string into GalleryItems
          } catch (IOException ioe) {
              Log.e(TAG, "Failed to fetch items", ioe);
          } catch (JSONException je) {
