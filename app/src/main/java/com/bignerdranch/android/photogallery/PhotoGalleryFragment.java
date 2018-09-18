@@ -1,6 +1,7 @@
 package com.bignerdranch.android.photogallery;
 
 import android.app.DownloadManager;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -105,6 +106,9 @@ public class PhotoGalleryFragment extends Fragment
         setRetainInstance(true);
         updateItems();
 
+        Intent i = PollService.newIntent(getActivity());
+        getActivity().startService(i);
+
         Handler responseHandler = new Handler(); //attached to the main thread
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);//passed to the download thread
         mThumbnailDownloader.setThumbnailDownloadListener(new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
@@ -124,11 +128,17 @@ public class PhotoGalleryFragment extends Fragment
         Log.i(TAG, "Background thread started");
     }
 
+    /**
+     * Once the options menu has been created
+     * @param menu
+     * @param inflater
+     */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_photo_gallery, menu);
 
+        //obtain the searchview
         MenuItem searchItem = menu.findItem(R.id.menu_item_search);
         final SearchView searchView = (SearchView) searchItem.getActionView();
 
@@ -152,11 +162,16 @@ public class PhotoGalleryFragment extends Fragment
             @Override
             public void onClick(View v) {
                 String query = QueryPreferences.getStoredQuery(getActivity());
-                searchView.setQuery(query, false);
+                searchView.setQuery(query, false);//put in query text from sharedprereference
             }
         });
     }
 
+    /**
+     * when the options menu is selected, do the following actions
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -169,6 +184,9 @@ public class PhotoGalleryFragment extends Fragment
         }
     }
 
+    /**
+     * a wrapper of FetchItemsTask
+     */
     private void updateItems()
     {
         String query = QueryPreferences.getStoredQuery(getActivity());

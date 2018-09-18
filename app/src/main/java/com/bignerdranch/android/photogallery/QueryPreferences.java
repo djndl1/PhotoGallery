@@ -4,6 +4,7 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 
 /**
+ * Set and get values of sharedPreferences
  * Created by djn on 9/17/18.
  */
 
