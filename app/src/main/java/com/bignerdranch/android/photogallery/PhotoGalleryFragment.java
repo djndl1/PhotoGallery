@@ -106,9 +106,6 @@ public class PhotoGalleryFragment extends Fragment
         setRetainInstance(true);
         updateItems();
 
-        Intent i = PollService.newIntent(getActivity());
-        getActivity().startService(i);
-
         Handler responseHandler = new Handler(); //attached to the main thread
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);//passed to the download thread
         mThumbnailDownloader.setThumbnailDownloadListener(new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
@@ -134,7 +131,8 @@ public class PhotoGalleryFragment extends Fragment
      * @param inflater
      */
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_photo_gallery, menu);
 
@@ -165,6 +163,14 @@ public class PhotoGalleryFragment extends Fragment
                 searchView.setQuery(query, false);//put in query text from sharedprereference
             }
         });
+
+        //set the title of menu_item_toggle_polling
+        MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
+        if (PollService.isServiceAlarmOn((getActivity()))) {
+            toggleItem.setTitle(R.string.stop_polling);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+        }
     }
 
     /**
@@ -178,6 +184,14 @@ public class PhotoGalleryFragment extends Fragment
             case R.id.menu_item_clear:
                 QueryPreferences.setStoredQuery(getActivity(), null);
                 updateItems();
+                return true;
+            //if the alarm for PollService is not off, set it on
+            case R.id.menu_item_toggle_polling:
+                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+                getActivity().invalidateOptionsMenu();
+                //Declare that the options menu has changed, so should be recreated.
+                // The onCreateOptionsMenu(Menu) method will be called the next time it needs to be displayed.
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
