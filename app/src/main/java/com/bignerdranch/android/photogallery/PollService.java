@@ -26,6 +26,8 @@ public class PollService extends IntentService {
 
         //Set interval to 1 minute
     private static final long POLL_INTERVAL_MS = TimeUnit.MINUTES.toMillis(1);
+    public static final String ACTION_SHOW_NOTIFICATION =
+            "com.bignerdranch.android.photogallery.SHOW_NOTIFICATION";
 
     public static Intent newIntent(Context context)
     {
@@ -48,6 +50,8 @@ public class PollService extends IntentService {
             alarmManager.cancel(pi);
             pi.cancel();
         }
+
+        QueryPreferences.setAlarmOn(context, isOn);
     }
 
     /**
@@ -108,6 +112,8 @@ public class PollService extends IntentService {
 
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
             notificationManagerCompat.notify(0, notification);//Post a notification to be shown in the status bar, stream, etc.
+
+            sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION));
         }
 
         QueryPreferences.setLastResultId(this, resultId);
